@@ -1,5 +1,6 @@
 declare global {
 	interface ClassOf<T> {
+		new (): T;
 		new (...args: any): T;
 	}
 

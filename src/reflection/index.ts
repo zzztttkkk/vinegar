@@ -1,3 +1,5 @@
+import { containers } from "./meta_register";
+
 export {
 	IsClass,
 	IsSubClassOf,
@@ -14,3 +16,8 @@ export {
 
 export { bind, type IBindPropOpts } from "./bind";
 export { merge, type IMergePropOpts } from "./merge";
+
+export const ArrayOf = containers.array;
+export const SetOf = containers.set;
+export const MapOf = containers.map;
+export const ObjectOf = containers.object;

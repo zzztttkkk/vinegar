@@ -31,7 +31,8 @@
 			},
 			"style": {
 				"noUnusedTemplateLiteral": "off",
-				"noParameterAssign": "off"
+				"noParameterAssign": "off",
+				"noInferrableTypes": "off"
 			}
 		}
 	},

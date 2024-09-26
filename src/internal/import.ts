@@ -1,3 +1,4 @@
+import { Glob, type GlobScanOptions } from "bun";
 import fs from "node:fs/promises";
 import path from "node:path";
 import url from "node:url";
@@ -41,6 +42,23 @@ export class Import {
 			}
 		}
 	}
-}
 
-console.log(fs, path, url);
+	static async require(
+		patterns: string[],
+		cb: (module: any) => void | Promise<void>,
+		opts?: GlobScanOptions,
+	) {
+		if (!opts) opts = {};
+		opts.absolute = true;
+		for (const pattern of patterns) {
+			const glob = new Glob(pattern);
+			for await (const element of glob.scan(opts)) {
+				const module = await import(element);
+				const crv = cb(module);
+				if (crv instanceof Promise) {
+					await crv;
+				}
+			}
+		}
+	}
+}

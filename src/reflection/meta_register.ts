@@ -213,8 +213,15 @@ export class MapType extends ContainerType {
 	}
 }
 
+export class ObjectType extends ContainerType {
+	[inspect.custom]() {
+		return `[${Object.getPrototypeOf(this).constructor.name} of { k: string, v: ${inspect(this.eletype)}]}`;
+	}
+}
+
 export const containers = {
 	array: (v: TypeValue, bindhint?: any) => new ArrayType(v, bindhint),
 	set: (v: TypeValue, bindhint?: any) => new SetType(v, bindhint),
 	map: (k: TypeValue, v: TypeValue, bindhints?: { key?: any; value?: any }) => new MapType(k, v, bindhints),
+	object: (v: TypeValue, bindhint?: any) => new ObjectType(v, bindhint),
 };

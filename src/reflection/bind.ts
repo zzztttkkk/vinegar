@@ -1,9 +1,20 @@
 import { inspect } from "bun";
-import { ArrayType, MapType, type MetaRegister, SetType, type TypeValue, metainfo } from "./meta_register";
+import { ArrayType, MapType, type MetaRegister, ObjectType, SetType, type TypeValue, metainfo } from "./meta_register";
 import { dis } from "./internal";
 
-export function __bind(typev: TypeValue, obj: any, hint?: any): any {
-	if (typeof typev === "function") return transform(obj, typev as any, hint);
+export function __bind<P extends IBindPropOpts>(
+	register: MetaRegister<unknown, P, unknown>,
+	typev: TypeValue,
+	obj: any,
+	hint?: any,
+): any {
+	if (typeof typev === "function") {
+		const trans = Reflect.get(typev, Symbol.transform);
+		if (trans) {
+			return transform(obj, typev as any, hint);
+		}
+		return bind(register, typev as any, obj);
+	}
 
 	if (typev instanceof ArrayType) {
 		if (!obj || typeof obj[Symbol.iterator] !== "function") {
@@ -12,7 +23,7 @@ export function __bind(typev: TypeValue, obj: any, hint?: any): any {
 
 		const ary = [] as any[];
 		for (const ele of obj) {
-			ary.push(__bind(typev.eletype, ele, typev.bindhint));
+			ary.push(__bind(register, typev.eletype, ele, typev.bindhint));
 		}
 		return ary;
 	}
@@ -24,11 +35,16 @@ export function __bind(typev: TypeValue, obj: any, hint?: any): any {
 
 		const ary = new Set<any>();
 		for (const ele of obj) {
-			ary.add(__bind(typev.eletype, ele, typev.bindhint));
+			ary.add(__bind(register, typev.eletype, ele, typev.bindhint));
 		}
 		return ary;
 	}
 
+	let isobj = false;
+	if (typev instanceof ObjectType) {
+		typev = new MapType(String, typev.eletype, { value: typev.bindhint });
+		isobj = true;
+	}
 	if (!(typev instanceof MapType)) {
 		throw new Error(`bad type value: ${typev}`);
 	}
@@ -37,8 +53,8 @@ export function __bind(typev: TypeValue, obj: any, hint?: any): any {
 
 	function add(k: any, v: any) {
 		map.set(
-			__bind((typev as MapType).keytype, k, (typev as MapType).keybindhint),
-			__bind((typev as MapType).eletype, v, (typev as MapType).bindhint),
+			__bind(register, (typev as MapType).keytype, k, (typev as MapType).keybindhint),
+			__bind(register, (typev as MapType).eletype, v, (typev as MapType).bindhint),
 		);
 	}
 
@@ -61,6 +77,14 @@ export function __bind(typev: TypeValue, obj: any, hint?: any): any {
 	}
 	for (const [k, v] of obj) {
 		add(k, v);
+	}
+
+	if (isobj) {
+		const obj = {};
+		for (const [k, v] of map) {
+			Reflect.set(obj, k, v);
+		}
+		return obj;
 	}
 	return map;
 }
@@ -93,11 +117,9 @@ export function bind<T, P extends IBindPropOpts>(
 		if (p.accessorstatus && !p.accessorstatus.canset) {
 			continue;
 		}
-		const srcv = src[k];
-		if (typeof srcv === "undefined") continue;
-
-		const typev = p.opts?.type || p.designtype;
-		(ele as any)[k] = __bind(typev, srcv, p.opts?.bindhint);
+		const srcv = Reflect.get(src, k);
+		if (srcv === undefined) continue;
+		Reflect.set(ele as object, k, __bind(register, p.opts?.type || p.designtype, srcv, p.opts?.bindhint));
 	}
 	return ele;
 }

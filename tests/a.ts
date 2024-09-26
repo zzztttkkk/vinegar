@@ -1,20 +1,20 @@
-import { sleep } from "bun";
-import * as lib from "../index";
-import "reflect-metadata";
+import { reflection } from "../index";
 
-console.json(lib.threadings.errors);
+const register = new reflection.MetaRegister<unknown, reflection.IBindPropOpts>(Symbol.for("testa"));
 
-process.RegisterBeforeShutdownAction(async () => {
-	await sleep(1000);
-});
-
-function As(): ClassDecorator {
-	return (target: Function) => {
-		console.log(target);
-	};
+class Address {
+	@register.prop()
+	city: string = "";
 }
 
-@As()
-class A {}
+class User {
+	@register.prop()
+	name: string = "";
 
-console.log(transform("false", Boolean));
+	@register.prop({ type: reflection.ArrayOf(reflection.ArrayOf(Address)) })
+	address: Address[][] = [];
+}
+
+const ins = register.bind(User, { name: "zxxx", address: [[{ city: "a" }, { city: "v" }]] });
+
+console.log(JSON.stringify(ins, null, 2));
