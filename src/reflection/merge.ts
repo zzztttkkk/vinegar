@@ -14,7 +14,7 @@ export interface IMergeOptions<P> {
 }
 
 interface _MergeOption<P> extends IMergeOptions<P> {
-	crefset?: Set<any>;
+	crefwset?: WeakSet<any>;
 }
 
 function _merge<T, P extends IMergePropOpts>(
@@ -39,7 +39,7 @@ function _merge<T, P extends IMergePropOpts>(
 		}
 
 		const typev = p.opts?.type || p.designtype;
-		const stv = __bind(typev, sv);
+		const stv = __bind(register, typev, sv);
 
 		const dv = (dest as any)[k];
 
@@ -54,7 +54,7 @@ function _merge<T, P extends IMergePropOpts>(
 			overwrite = overwrite(dv, sv, cls, k, p);
 		}
 		if (!overwrite) continue;
-		(dest as any)[k] = __bind(typev, sv);
+		(dest as any)[k] = __bind(register, typev, sv);
 	}
 }
 
