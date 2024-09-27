@@ -32,7 +32,8 @@
 			"style": {
 				"noUnusedTemplateLiteral": "off",
 				"noParameterAssign": "off",
-				"noInferrableTypes": "off"
+				"noInferrableTypes": "off",
+				"noNonNullAssertion": "off"
 			}
 		}
 	},

@@ -3,6 +3,8 @@ import { inspect } from "bun";
 export { Stack } from "./stack";
 export { Import } from "./import";
 export { LazyDepend } from "./lazydi";
+export { LinkList } from "./linklist";
+export { Secrets } from "./secrets";
 
 // https://stackoverflow.com/a/1997811/6683474
 const UniqueIdSymbal = Symbol("pkgs:internal:unique_id");
