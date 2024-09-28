@@ -65,7 +65,8 @@ Object.defineProperty(String, TransformSymbol, {
 	},
 });
 
-const truths = ["TRUE", "true", "OK", "ok", "YES", "yes"];
+const truths = new Set(["TRUE", "true", "OK", "ok", "YES", "yes"]);
+const upperTruths = new Set(Array.from(truths).map((v) => v.toUpperCase()));
 
 let DefaultBoolTransformHint: __pkgs.BooleanTransformHint = { directly: true };
 
@@ -88,15 +89,10 @@ Object.defineProperty(Boolean, TransformSymbol, {
 		if (type === "number" || type === "bigint") return Boolean(src);
 
 		const val = type === "string" ? src : transform(src, String);
-		const _ts = (hint?.truths || truths) as string[];
-		if (hint?.casesensitive) return _ts.includes(val);
-		const uv = val.toUpperCase();
-		for (const ele of _ts) {
-			if (ele.toUpperCase === uv) {
-				return true;
-			}
-		}
-		return false;
+		const _ts = hint?.truths || truths;
+		if (hint?.casesensitive) return _ts.has(val);
+		const uts = hint?.truths ? new Set(Array.from(_ts).map((v) => v.toUpperCase())) : upperTruths;
+		return uts.has(val.toUpperCase());
 	},
 });
 
@@ -106,7 +102,7 @@ declare global {
 	}
 	namespace __pkgs {
 		interface BooleanTransformHint {
-			truths?: string[];
+			truths?: Set<string>;
 			casesensitive?: boolean;
 			directly?: boolean;
 		}
